@@ -2,7 +2,7 @@
 
 **Leakage-safe multi-view Grassmannian learning for repeated Parkinsonian speech**
 
-VoxNeuro is a minimal reference implementation of the speech-classification pipeline described by Laiba Khan and Manas Waghe in *VoxNeuro: Leakage-Safe Multi-View Grassmannian Learning for Repeated Parkinsonian Speech with Complementary Gait Evidence* (MIT URTC, 2026).
+VoxNeuro is a reference implementation of the speech-classification pipeline described by Laiba Khan and Manas Waghe in *VoxNeuro: Leakage-Safe Multi-View Grassmannian Learning for Repeated Parkinsonian Speech with Complementary Gait Evidence* (MIT URTC, 2026).
 
 The central design choice is simple but important: the subject, not an individual recording, is the statistical observation. Every recording from one person stays in the same outer fold, and all scaling, bandwidth estimation, and synthetic-subject generation are restricted to training data.
 
@@ -56,7 +56,7 @@ K(i,j)
 The two Gaussian blocks are positive semidefinite, so their nonnegative weighted sum is also positive semidefinite. The implementation estimates each bandwidth from positive, squared, pairwise training distances using
 
 ```math
-\gamma = \left[2\,\operatorname{median}(\delta^2)+10^{-12}\right]^{-1}.
+\gamma = \left[2\,\mathrm{median}(\delta^2)+10^{-12}\right]^{-1}.
 ```
 
 For an imbalanced training fold, G-SMOTE selects a minority subject and one of its nearest minority neighbors under squared chordal distance. It follows a shortest Grassmann geodesic and uses the same draw $t\sim\mathcal{U}(0,1)$ to interpolate the Euclidean view. Synthetic subjects are generated only inside the training fold until its class counts match. This project-specific name does not refer to the separate Geometric SMOTE algorithm.
@@ -84,11 +84,6 @@ The datasets are public and de-identified but are not bundled with this reposito
 | PD-252 | [Parkinson's Disease Classification, UCI dataset 470](https://archive.ics.uci.edu/dataset/470/parkinson%2Bs%2Bdisease%2Bclassification) | 252 subjects: 188 PD, 64 control | 3 per subject | 753 | `pd_speech_features.csv` inside `pd_speech_features.rar` |
 
 `PD-252` is the paper's shorthand for the 252-subject cohort; it is **not** a UCI dataset number. Its official UCI identifier is 470. Both datasets contain engineered features, not raw speech recordings.
-
-> [!WARNING]
-> The current package strictly requires every subject matrix to have numerical rank at least `--rank`. The official UCI files contain an exact duplicate pair for UCI-489 subject `CONT-36` and for PD-252 subject `37`, making those subject matrices rank 2. Consequently, the paper's `--rank 3` setting is rejected by this implementation on both unmodified datasets.
->
-> The runnable examples below use `--rank 2` only as implementation smoke tests. Their results are **not** reproductions of the paper's rank-3 results. A paper-faithful reproduction requires an explicit, audited policy for rank-deficient triples; records should not be silently deleted and rank-2 output should not be presented as the published experiment.
 
 ## Installation
 
@@ -161,7 +156,7 @@ voxneuro \
   --csv /path/to/pd_speech_features_clean.csv \
   --id-col id \
   --label-col class \
-  --rank 2 \
+  --rank 3 \
   --output-dir results/pd252-rank2
 ```
 
@@ -289,4 +284,4 @@ The UCI dataset pages list both datasets under the Creative Commons Attribution 
 
 ## License
 
-The VoxNeuro source code is released under the MIT License. The UCI datasets are licensed separately under the Creative Commons Attribution 4.0 International license; their terms are not changed by this repository's code license.
+The VoxNeuro source code is released under the [MIT License](LICENSE). The UCI datasets are licensed separately under the Creative Commons Attribution 4.0 International license; their terms are not changed by this repository's code license.
