@@ -117,7 +117,7 @@ python -m pip install -e .
 
 ### UCI-489
 
-Download and extract `ReplicatedAcousticFeatures-ParkinsonDatabase.csv` from the [official UCI-489 page](https://archive.ics.uci.edu/dataset/489/parkinson%2Bdataset%2Bwith%2Breplicated%2Bacoustic%2Bfeatures), then run the rank-2 smoke test:
+Download and extract `ReplicatedAcousticFeatures-ParkinsonDatabase.csv` from the [official UCI-489 page](https://archive.ics.uci.edu/dataset/489/parkinson%2Bdataset%2Bwith%2Breplicated%2Bacoustic%2Bfeatures), then run the rank-3 smoke test:
 
 ```bash
 voxneuro \
@@ -125,8 +125,8 @@ voxneuro \
   --id-col ID \
   --label-col Status \
   --drop-cols Recording \
-  --rank 2 \
-  --output-dir results/uci489-rank2
+  --rank 3 \
+  --output-dir results/uci489-rank3
 ```
 
 `Gender` is intentionally retained as a modeled variable, matching the paper.
@@ -149,7 +149,7 @@ pd.read_csv(source, header=1).to_csv(target, index=False)
 print(target)
 ```
 
-Then run the rank-2 smoke test:
+Then run the rank-3 smoke test:
 
 ```bash
 voxneuro \
@@ -157,7 +157,7 @@ voxneuro \
   --id-col id \
   --label-col class \
   --rank 3 \
-  --output-dir results/pd252-rank2
+  --output-dir results/pd252-rank3
 ```
 
 The `gender` column is intentionally retained as a modeled variable, matching the paper.
@@ -259,7 +259,6 @@ The current suite contains three focused tests covering geodesic orthonormality,
 - Subject-level out-of-fold predictions make aggregate metrics auditable.
 - Dependency versions are lower-bounded rather than locked.
 - The repository does not store the paper's exact fold assignments, prepared datasets, or published result artifacts.
-- The rank-2 public-dataset smoke tests above intentionally differ from the paper's rank-3 protocol.
 
 ## Paper, project, and citations
 
