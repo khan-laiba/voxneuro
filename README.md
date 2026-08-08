@@ -14,24 +14,24 @@ This repository contains the full executable code needed to demonstrate the core
 
 ## Method summary
 
-For subject \(i\), repeated standardized recordings are stacked as
+For subject $i$, repeated standardized recordings are stacked as
 
-\[
-M_i=[\widetilde{x}_{i1},\ldots,\widetilde{x}_{im_i}]\in\mathbb{R}^{d\times m_i}.
-\]
+```math
+M_i = [\widetilde{x}_{i1}, \ldots, \widetilde{x}_{im_i}] \in \mathbb{R}^{d \times m_i}.
+```
 
-A thin singular value decomposition gives a rank-\(r\) orthonormal basis \(Q_i\), representing a point on \(\mathrm{Gr}(r,d)\). The Euclidean view is
+A thin singular value decomposition gives a rank $r$ orthonormal basis $Q_i$, representing a point on $\mathrm{Gr}(r,d)$. The Euclidean view is
 
-\[
-s_i=[\mu_i;\sigma_i],
-\]
+```math
+s_i = [\mu_i; \sigma_i],
+```
 
-where \(\mu_i\) and \(\sigma_i\) are coordinate-wise mean and standard deviation across recordings. The fused kernel is
+where $\mu_i$ and $\sigma_i$ are the coordinate-wise mean and standard deviation across recordings. The fused kernel is
 
-\[
-K(i,j)=w\exp[-\gamma_G d_{\mathrm{ch}}^2(Q_i,Q_j)]
- +(1-w)\exp[-\gamma_E\|s_i-s_j\|_2^2].
-\]
+```math
+K(i,j) = w\exp\!\left[-\gamma_G d_{\mathrm{ch}}^2(Q_i,Q_j)\right]
++ (1-w)\exp\!\left[-\gamma_E \lVert s_i-s_j \rVert_2^2\right].
+```
 
 For an imbalanced training fold, the minority class is balanced by geodesic interpolation between neighboring minority subspaces, with the same interpolation coefficient used for the Euclidean view.
 
