@@ -1,6 +1,6 @@
 # VoxNeuro Minimal Method Repository
 
-This repository contains the minimum executable code needed to demonstrate the core VoxNeuro method described in the MIT URTC paper:
+This repository contains the full executable code needed to demonstrate the core VoxNeuro method described in the MIT URTC paper:
 
 - subject-disjoint cross-validation;
 - training-fold-only standardization;
