@@ -13,6 +13,8 @@ from pathlib import Path
 from typing import Iterable, Sequence
 import math
 
+import warnings
+
 import numpy as np
 import pandas as pd
 from imblearn.over_sampling import SMOTE
@@ -131,12 +133,18 @@ def build_subject_views(
     row_labels: np.ndarray,
     subject_ids: Sequence[str],
     rank: int,
+    allow_rank_deficient: bool = False,
 ) -> tuple[list[np.ndarray], np.ndarray, np.ndarray]:
     """Build Grassmann and Euclidean views for complete subjects.
 
-    The function validates that every subject matrix has numerical rank at
-    least ``rank``. This keeps all returned subspaces on one fixed
-    Grassmann manifold ``Gr(rank, d)``.
+    By default the function validates that every subject matrix has numerical
+    rank at least ``rank``, which keeps all returned subspaces on one fixed
+    Grassmann manifold ``Gr(rank, d)``. With ``allow_rank_deficient=True`` a
+    rank-deficient subject is accepted with a warning and its first ``rank``
+    left-singular vectors are retained, matching the paper's Equation (4).
+    The official UCI releases contain byte-identical repeated recordings for
+    some subjects (for example ``CONT-36`` in UCI-489 and id ``37`` in
+    PD-252), so the paper's rank-3 configuration requires this option.
     """
     Q_list: list[np.ndarray] = []
     summaries: list[np.ndarray] = []
@@ -155,10 +163,18 @@ def build_subject_views(
         U, singular_values, _ = np.linalg.svd(M, full_matrices=False)
         observed_rank = _numerical_rank(singular_values, *M.shape)
         if observed_rank < rank:
-            raise ValueError(
+            message = (
                 f"Subject {sid!r} has numerical rank {observed_rank}, "
                 f"below requested rank {rank}."
             )
+            if not allow_rank_deficient:
+                raise ValueError(
+                    message + " Pass allow_rank_deficient=True (CLI: "
+                    "--allow-rank-deficient) to retain the first "
+                    f"{rank} left-singular vectors instead."
+                )
+            warnings.warn(message + " Retaining the first "
+                          f"{rank} left-singular vectors.", stacklevel=2)
         Q_list.append(U[:, :rank])
         summaries.append(np.concatenate([mean, std]))
         labels.append(int(row_labels[idx[0]]))
@@ -345,6 +361,7 @@ def evaluate_repeated_measurements(
     C: float = 1.0,
     g_smote_neighbors: int = 5,
     random_state: int = 42,
+    allow_rank_deficient: bool = False,
 ) -> EvaluationResult:
     """Run leakage-safe subject-level evaluation on repeated measurements."""
     if rank < 1:
@@ -383,10 +400,10 @@ def evaluate_repeated_measurements(
         X_scaled[test_rows] = scaler.transform(X[test_rows])
 
         Q_train, s_train, y_train = build_subject_views(
-            X_scaled, row_ids, row_labels, train_ids, rank
+            X_scaled, row_ids, row_labels, train_ids, rank, allow_rank_deficient
         )
         Q_test, s_test, y_test = build_subject_views(
-            X_scaled, row_ids, row_labels, test_ids, rank
+            X_scaled, row_ids, row_labels, test_ids, rank, allow_rank_deficient
         )
 
         # Balanced logistic regression.

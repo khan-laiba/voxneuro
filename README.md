@@ -70,6 +70,8 @@ The paper experiments used three recordings per subject and fixed $r=3$, $w=0.5$
 | UCI-489 | Grassmann-Euclidean fusion | 0.850 ± 0.042 | 0.847 ± 0.043 |
 | PD-252 | Grassmann-Euclidean fusion + G-SMOTE | 0.749 ± 0.039 | 0.760 ± 0.035 |
 
+The [`results/uci489-rank3/`](results/uci489-rank3/) directory archives the four output CSVs of a UCI-489 run of this package (rank 3, seed 42, `--allow-rank-deficient`, five folds), including the subject-level out-of-fold predictions referenced in the manuscript's Data Availability Statement; its fused-model aggregates match the manuscript's UCI-489 values above.
+
 
 ## Datasets
 
@@ -123,8 +125,11 @@ voxneuro \
   --label-col Status \
   --drop-cols Recording \
   --rank 3 \
+  --allow-rank-deficient \
   --output-dir results/uci489-rank3
 ```
+
+`--allow-rank-deficient` is required: the official CSV contains byte-identical repeated recordings for subject `CONT-36`, so that subject's matrix has numerical rank 2 and the paper's rank-3 configuration retains its first three left-singular vectors, as in the paper's Equation (4).
 
 `Gender` is intentionally retained as a modeled variable, matching the paper.
 
@@ -154,8 +159,11 @@ voxneuro \
   --id-col id \
   --label-col class \
   --rank 3 \
+  --allow-rank-deficient \
   --output-dir results/pd252-rank3
 ```
+
+`--allow-rank-deficient` is required here as well: the official file contains byte-identical repeated recordings for subject id `37`.
 
 The `gender` column is intentionally retained as a modeled variable, matching the paper.
 
@@ -261,7 +269,7 @@ The current suite contains three focused tests covering geodesic orthonormality,
 
 **Paper**
 
-Laiba Khan and Manas Waghe, “VoxNeuro: Accessible and Leakage-Safe Parkinson’s Screening Support via Multi-View Grassmannian Speech Analysis,” submitted to *Bioengineering* (MDPI), 2026. Under review; this entry and `CITATION.cff` will be updated with the final citation upon publication.
+Laiba Khan and Manas Waghe, “VoxNeuro: Accessible and Leakage-Safe Parkinson’s Screening Support via Multi-View Grassmannian Speech Analysis,” submitted to *Bioengineering* (MDPI), 2026. Under review; this entry and `CITATION.cff` will be updated with the final citation upon publication. The submitted manuscript is archived at [`paper/VoxNeuro_MDPI_Bioengineering_submitted.pdf`](paper/VoxNeuro_MDPI_Bioengineering_submitted.pdf).
 
 ```bibtex
 @unpublished{khan2026voxneuro,
