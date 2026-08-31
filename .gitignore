@@ -2,4 +2,4 @@ __pycache__/
 *.pyc
 *.egg-info/
 .venv/
-results/pd252*/
+results/pd252-rank3/
