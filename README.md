@@ -70,6 +70,8 @@ The paper experiments used three recordings per subject and fixed $r=3$, $w=0.5$
 | UCI-489 | Grassmann-Euclidean fusion | 0.850 ± 0.042 | 0.847 ± 0.043 |
 | PD-252 | Grassmann-Euclidean fusion + G-SMOTE | 0.749 ± 0.039 | 0.760 ± 0.035 |
 
+[`results/pd252-seed-study/`](results/pd252-seed-study/) archives a paired G-SMOTE seed-sensitivity study on PD-252 (24 distinct augmentation seeds, outer folds fixed): per-seed balanced accuracy and macro-F1 for the fused model and its matched Euclidean RBF ablation (the same pipeline with `--weight 0`), produced by [`scripts/seed_sensitivity.py`](scripts/seed_sensitivity.py) under the pinned environment.
+
 The [`results/uci489-rank3/`](results/uci489-rank3/) directory archives the four output CSVs of a UCI-489 run of this package (rank 3, seed 42, `--allow-rank-deficient`, five folds) under the pinned environment in [`requirements-lock.txt`](requirements-lock.txt), including the subject-level out-of-fold predictions referenced in the manuscript's Data Availability Statement; its fused-model aggregates match the manuscript's UCI-489 values above.
 
 
