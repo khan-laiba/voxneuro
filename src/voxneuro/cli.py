@@ -30,6 +30,17 @@ def _parser() -> argparse.ArgumentParser:
     parser.add_argument("--C", type=float, default=1.0, help="SVM penalty.")
     parser.add_argument("--gsmote-neighbors", type=int, default=5)
     parser.add_argument("--seed", type=int, default=42)
+    parser.add_argument(
+        "--allow-rank-deficient",
+        action="store_true",
+        help=(
+            "Accept subjects whose recording matrix has numerical rank below "
+            "--rank, retaining the first r left-singular vectors with a "
+            "warning. Required to run the paper's rank-3 configuration on the "
+            "official UCI files, which contain byte-identical repeated "
+            "recordings for some subjects."
+        ),
+    )
     return parser
 
 
@@ -42,6 +53,7 @@ def main() -> None:
         label_col=args.label_col,
         drop_cols=args.drop_cols,
         rank=args.rank,
+        allow_rank_deficient=args.allow_rank_deficient,
         n_splits=args.splits,
         weight=args.weight,
         C=args.C,
