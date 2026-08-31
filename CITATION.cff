@@ -1,0 +1,29 @@
+cff-version: 1.2.0
+message: >-
+  If you use this software, please cite it using the metadata below. A journal
+  article describing the method has been submitted to Bioengineering (MDPI) and
+  is under review; this file will be updated with the final article metadata
+  upon publication.
+title: "VoxNeuro"
+type: software
+authors:
+  - family-names: Khan
+    given-names: Laiba
+  - family-names: Waghe
+    given-names: Manas
+repository-code: "https://github.com/khan-laiba/voxneuro"
+url: "https://voxneuro.org"
+license: MIT
+preferred-citation:
+  type: article
+  title: >-
+    VoxNeuro: Accessible and Leakage-Safe Parkinson's Screening Support via
+    Multi-View Grassmannian Speech Analysis
+  authors:
+    - family-names: Khan
+      given-names: Laiba
+    - family-names: Waghe
+      given-names: Manas
+  year: 2026
+  journal: "Bioengineering"
+  notes: "Submitted to Bioengineering (MDPI); under review."

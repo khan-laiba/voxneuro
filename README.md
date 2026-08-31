@@ -2,7 +2,7 @@
 
 **Leakage-safe multi-view Grassmannian learning for repeated Parkinsonian speech**
 
-VoxNeuro is a reference implementation of the speech-classification pipeline described by Laiba Khan and Manas Waghe in *VoxNeuro: Leakage-Safe Multi-View Grassmannian Learning for Repeated Parkinsonian Speech with Complementary Gait Evidence* (MIT URTC, 2026).
+VoxNeuro is a reference implementation of the speech-classification pipeline described by Laiba Khan and Manas Waghe in *VoxNeuro: Accessible and Leakage-Safe Parkinson’s Screening Support via Multi-View Grassmannian Speech Analysis*, submitted to *Bioengineering* (MDPI) in 2026 and currently under review. The manuscript supersedes an earlier five-page conference version prepared for MIT URTC 2026.
 
 The central design choice is simple but important: the subject, not an individual recording, is the statistical observation. Every recording from one person stays in the same outer fold, and all scaling, bandwidth estimation, and synthetic-subject generation are restricted to training data.
 
@@ -22,7 +22,7 @@ The central design choice is simple but important: the subject, not an individua
 - Euclidean SMOTE followed by logistic regression;
 - fold metrics, cross-fold summaries, pooled confusion counts, and subject-level out-of-fold predictions.
 
-This is not the complete paper analysis archive. The current package does **not** include the paper's matched Euclidean RBF + G-SMOTE ablation, feature-family permutation analysis, separate gait-cohort analysis, deployed web application, exact archived fold assignments, or published result files. The gait evidence in the paper comes from a separate cohort and is not same-subject speech-gait fusion.
+This is not the complete paper analysis archive. The current package does **not** include the paper's matched Euclidean RBF + G-SMOTE ablation, feature-family permutation analysis, deployed web application, exact archived fold assignments, or submitted result files. Subject-level out-of-fold prediction files for the submitted manuscript will be archived here, as stated in the manuscript's Data Availability Statement.
 
 ## Method summary
 
@@ -261,7 +261,17 @@ The current suite contains three focused tests covering geodesic orthonormality,
 
 **Paper**
 
-Laiba Khan and Manas Waghe, “VoxNeuro: Leakage-Safe Multi-View Grassmannian Learning for Repeated Parkinsonian Speech with Complementary Gait Evidence,” MIT URTC, 2026.
+Laiba Khan and Manas Waghe, “VoxNeuro: Accessible and Leakage-Safe Parkinson’s Screening Support via Multi-View Grassmannian Speech Analysis,” submitted to *Bioengineering* (MDPI), 2026. Under review; this entry and `CITATION.cff` will be updated with the final citation upon publication.
+
+```bibtex
+@unpublished{khan2026voxneuro,
+  author = {Khan, Laiba and Waghe, Manas},
+  title  = {VoxNeuro: Accessible and Leakage-Safe Parkinson's Screening Support
+            via Multi-View Grassmannian Speech Analysis},
+  note   = {Submitted to Bioengineering (MDPI); under review},
+  year   = {2026}
+}
+```
 
 **Project**
 
