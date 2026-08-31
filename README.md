@@ -70,7 +70,7 @@ The paper experiments used three recordings per subject and fixed $r=3$, $w=0.5$
 | UCI-489 | Grassmann-Euclidean fusion | 0.850 ± 0.042 | 0.847 ± 0.043 |
 | PD-252 | Grassmann-Euclidean fusion + G-SMOTE | 0.749 ± 0.039 | 0.760 ± 0.035 |
 
-The [`results/uci489-rank3/`](results/uci489-rank3/) directory archives the four output CSVs of a UCI-489 run of this package (rank 3, seed 42, `--allow-rank-deficient`, five folds), including the subject-level out-of-fold predictions referenced in the manuscript's Data Availability Statement; its fused-model aggregates match the manuscript's UCI-489 values above.
+The [`results/uci489-rank3/`](results/uci489-rank3/) directory archives the four output CSVs of a UCI-489 run of this package (rank 3, seed 42, `--allow-rank-deficient`, five folds) under the pinned environment in [`requirements-lock.txt`](requirements-lock.txt), including the subject-level out-of-fold predictions referenced in the manuscript's Data Availability Statement; its fused-model aggregates match the manuscript's UCI-489 values above.
 
 
 ## Datasets
@@ -262,7 +262,8 @@ The current suite contains three focused tests covering geodesic orthonormality,
 - Synthetic subjects are created only inside imbalanced training folds.
 - Randomized components receive explicit seeds.
 - Subject-level out-of-fold predictions make aggregate metrics auditable.
-- Dependency versions are lower-bounded rather than locked.
+- Dependency versions are lower-bounded in `requirements.txt`; the exact environment used to generate the archived results is pinned in [`requirements-lock.txt`](requirements-lock.txt) (`pip install -r requirements-lock.txt` on Python 3.11).
+- Given a fixed dataset, seed, and dependency set, package outputs are deterministic. On imbalanced datasets the fused model additionally depends on the G-SMOTE random draws, so `--seed` must be held fixed to obtain identical numbers across machines; the archived UCI-489 predicted labels were reproduced identically across numpy 1.26–2.x and scikit-learn 1.3–1.9.
 - The repository does not store the paper's exact fold assignments, prepared datasets, or published result artifacts.
 
 ## Paper, project, and citations
