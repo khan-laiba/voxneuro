@@ -72,6 +72,8 @@ The paper experiments used three recordings per subject and fixed $r=3$, $w=0.5$
 
 [`results/pd252-seed-study/`](results/pd252-seed-study/) archives a paired G-SMOTE seed-sensitivity study on PD-252 (24 distinct augmentation seeds, outer folds fixed): per-seed balanced accuracy and macro-F1 for the fused model and its matched Euclidean RBF ablation (the same pipeline with `--weight 0`), produced by [`scripts/seed_sensitivity.py`](scripts/seed_sensitivity.py) under the pinned environment.
 
+[`results/pd252-default-seed/`](results/pd252-default-seed/) archives the four output CSVs of a PD-252 run of this package at the default seed (rank 3, seed 42, `--allow-rank-deficient`, five folds) under the pinned environment: fused balanced accuracy 0.731 and macro-F1 0.749, the default-seed values quoted in the manuscript's Section 3.3, with subject-level out-of-fold predictions and pooled confusion counts.
+
 The [`results/uci489-rank3/`](results/uci489-rank3/) directory archives the four output CSVs of a UCI-489 run of this package (rank 3, seed 42, `--allow-rank-deficient`, five folds) under the pinned environment in [`requirements-lock.txt`](requirements-lock.txt), including the subject-level out-of-fold predictions referenced in the manuscript's Data Availability Statement; its fused-model aggregates match the manuscript's UCI-489 values above.
 
 
@@ -84,7 +86,7 @@ The datasets are public and de-identified but are not bundled with this reposito
 | UCI-489 | [Parkinson Dataset with replicated acoustic features](https://archive.ics.uci.edu/dataset/489/parkinson%2Bdataset%2Bwith%2Breplicated%2Bacoustic%2Bfeatures) | 80 subjects: 40 PD, 40 control | 3 per subject | 45 | `ReplicatedAcousticFeatures-ParkinsonDatabase.csv` |
 | PD-252 | [Parkinson's Disease Classification, UCI dataset 470](https://archive.ics.uci.edu/dataset/470/parkinson%2Bs%2Bdisease%2Bclassification) | 252 subjects: 188 PD, 64 control | 3 per subject | 753 | `pd_speech_features.csv` inside `pd_speech_features.rar` |
 
-`PD-252` is the paper's shorthand for the 252-subject cohort in the dataset, with 470 recordings across 252 unique subjects; it is **not** a UCI dataset number. Its official UCI identifier is 470. Both datasets contain engineered features, not raw speech recordings.
+`PD-252` is the paper's shorthand for the 252-subject cohort in the dataset, with 756 recordings (three per subject) across 252 unique subjects; it is **not** a UCI dataset number. Its official UCI identifier is 470. Both datasets contain engineered features, not raw speech recordings.
 
 ## Installation
 
