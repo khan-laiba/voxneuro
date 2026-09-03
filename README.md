@@ -22,7 +22,7 @@ The central design choice is simple but important: the subject, not an individua
 - Euclidean SMOTE followed by logistic regression;
 - fold metrics, cross-fold summaries, pooled confusion counts, and subject-level out-of-fold predictions.
 
-This is not the complete paper analysis archive. The current package does **not** include the paper's matched Euclidean RBF + G-SMOTE ablation, feature-family permutation analysis, deployed web application, exact archived fold assignments, or submitted result files. Subject-level out-of-fold prediction files for the submitted manuscript will be archived here, as stated in the manuscript's Data Availability Statement.
+This is not the complete paper analysis archive. The core CLI does not expose the paper's matched Euclidean RBF + G-SMOTE ablation as a named output; that ablation is implemented in [`scripts/seed_sensitivity.py`](scripts/seed_sensitivity.py) (fusion weight 0 on the same augmented training folds). The feature-family permutation analysis and the deployed web application are not included. Subject-level out-of-fold predictions are archived under `results/` for the UCI-489 run and the PD-252 default-seed run, as stated in the manuscript's Data Availability Statement.
 
 ## Method summary
 
@@ -61,7 +61,7 @@ The two Gaussian blocks are positive semidefinite, so their nonnegative weighted
 
 For an imbalanced training fold, G-SMOTE selects a minority subject and one of its nearest minority neighbors under squared chordal distance. It follows a shortest Grassmann geodesic and uses the same draw $t\sim\mathcal{U}(0,1)$ to interpolate the Euclidean view. Synthetic subjects are generated only inside the training fold until its class counts match. This project-specific name does not refer to the separate Geometric SMOTE algorithm.
 
-The paper experiments used three recordings per subject and fixed $r=3$, $w=0.5$, SVM $C=1$, five nearest minority neighbors, five stratified outer folds, and random seed 42. UCI-489 is balanced, so no synthetic subjects were generated for it.
+The paper experiments used three recordings per subject and fixed $r=3$, $w=0.5$, SVM $C=1$, five nearest minority neighbors, five stratified outer folds, and outer-fold seed 42; the original PD-252 augmentation state was not retained, and the archived default-seed and seed-sensitivity runs use the documented derived seeds. UCI-489 is balanced, so no synthetic subjects were generated for it.
 
 ## Results 
 
