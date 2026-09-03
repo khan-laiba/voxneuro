@@ -17,7 +17,7 @@ license: MIT
 preferred-citation:
   type: article
   title: >-
-    VoxNeuro: Accessible and Leakage-Safe Parkinson's Screening Support via
+    VoxNeuro: Leakage-Safe Parkinson's Screening Support via
     Multi-View Grassmannian Speech Analysis
   authors:
     - family-names: Khan
