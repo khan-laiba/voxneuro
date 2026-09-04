@@ -8,3 +8,5 @@ Euclidean_RBF_GSMOTE,39,25,23,165
 Balanced_LogReg,37,27,22,166
 Balanced_LinearSVM,36,28,22,166
 SMOTE_LogReg,37,27,22,166
+Balanced_RandomForest,28,36,5,183
+PLS_DA,43,21,14,174
