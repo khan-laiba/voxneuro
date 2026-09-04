@@ -1,44 +1,42 @@
-"""Rank-normalized, dimension-adaptive multi-view Grassmannian classifier (VoxNeuro-AS).
+"""VoxNeuro: rank-normalized, dimension-adaptive multi-view Grassmannian classifier.
 
-This module extends the core method in :mod:`voxneuro.method` with two
-fold-local components that were developed after the original submission:
+This module implements the model reported in the manuscript on top of the
+shared machinery of :mod:`voxneuro.method`:
 
 1. **Gaussian rank normalization** of the recording-level features. Each
    feature is mapped through the empirical distribution function of the
-   *training-fold recordings* and then through the standard normal quantile
-   function, replacing z-standardization. The mapping is monotone and
-   scale-free, so heavy-tailed acoustic descriptors no longer dominate the
-   Euclidean summary distances.
+   *training-fold recordings* (``min(RANK_KNOTS, n_train_recordings)``
+   quantile knots, linear interpolation) and then through the standard normal
+   quantile function. The mapping is monotone and scale-free, so heavy-tailed
+   acoustic descriptors no longer dominate the Euclidean summary distances.
 
-2. **A supervised-subspace stage that is activated only in the
-   high-dimensional regime** (feature count larger than the number of
-   training recordings). A partial-least-squares (PLS) projection fitted on
-   the training-fold recordings with class-balanced targets maps every
-   recording to ``q`` coordinates; the subject views (rank-``r`` subspace and
-   mean-dispersion summary), the median-heuristic Gaussian kernels and the
-   fused kernel are then built in that space exactly as in the original
-   method. One class-weighted SVM is trained per subspace dimension in
-   ``subspace_dims``; their decision functions are divided by the standard
-   deviation of the training decision values and averaged (a selection-free
-   ensemble). No synthetic subjects are generated in this branch: the
-   class-weighted SVM already balances the classes and a G-SMOTE ablation
-   reduced balanced accuracy in the compressed space.
+2. **A supervised-subspace stage that is activated by a dimensionality gate**
+   (feature count larger than the number of training recordings). A
+   partial-least-squares (PLS) projection fitted on the training-fold
+   recordings with class-balanced targets maps every recording to ``q``
+   coordinates; the subject views (rank-``r`` subspace and mean-dispersion
+   summary), the median-heuristic Gaussian kernels and the fused kernel are
+   then built in that space exactly as in the full space. One class-weighted
+   SVM is trained per subspace dimension in ``subspace_dims``; their decision
+   functions are divided by the standard deviation of the training decision
+   values and averaged (a fixed-dimension ensemble with no within-fold
+   selection). No synthetic subjects are generated in this branch; the
+   class-weighted SVM balances the classes.
 
 When the gate is inactive (``p <= n_train_recordings``) the model reduces to
-the original fused Grassmann-Euclidean SVM with rank normalization and the
-original G-SMOTE imbalance gate.
+the full-space fused Grassmann-Euclidean SVM under rank normalization,
+including the conditional G-SMOTE branch for imbalanced training folds.
 
 Everything that is fitted (normalizer, projection, subspaces, bandwidths,
 classifiers, decision scales) uses the current outer-training fold only, so
-the evaluation remains leakage-safe at the subject level.
+the evaluation remains leakage-safe at the subject level. Evaluation runs
+under single-threaded BLAS so that decision values are bit-reproducible.
 """
 
 from __future__ import annotations
 
 from dataclasses import dataclass
 from typing import Sequence
-
-import warnings
 
 import numpy as np
 import pandas as pd
@@ -49,7 +47,7 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.linear_model import LogisticRegression
 from sklearn.model_selection import StratifiedKFold
 from sklearn.preprocessing import QuantileTransformer, StandardScaler
-from sklearn.svm import LinearSVC, SVC
+from sklearn.svm import LinearSVC
 
 from .method import (
     EvaluationResult,
@@ -110,7 +108,7 @@ def fit_supervised_projection(
 
 
 def subspace_gate_active(n_features: int, n_train_recordings: int, gate: str = "auto") -> bool:
-    """Prespecified dimensionality gate for the supervised-subspace stage."""
+    """Dimensionality gate for the supervised-subspace stage (active when features outnumber training recordings)."""
     if gate == "on":
         return True
     if gate == "off":
