@@ -3,9 +3,7 @@
 These scripts document the method-development search that preceded the adaptive-subspace fused model
 (`voxneuro.adaptive`, release v2.0.0). They were run on the default outer partition (seed 42) of both cohorts,
 i.e. on the *development* partition, and their results must not be read as confirmatory estimates.
-They import the scratch-layout helpers (`vox2.py` = `family_mkl.py`, `vox3.py` = `subspace_dev.py`,
-`newmethods2.py` = `exploration2.py`) and expect the two cohort CSVs under `data/`; run them with
-`PYTHONPATH=src:scripts/exploratory` from the repository root after renaming the imports accordingly.
+They import each other by their distributed module names (`family_mkl.py`, `subspace_dev.py`, `exploration2.py`) and expect the two cohort CSVs under `data/` (`ReplicatedAcousticFeatures-ParkinsonDatabase.csv`, `pd_speech_features_clean.csv`) and an existing `robustness_out/` directory; run them with `PYTHONPATH=src:scripts/exploratory python scripts/exploratory/<script>.py` from the repository root.
 
 | Script | Content | Results |
 | --- | --- | --- |

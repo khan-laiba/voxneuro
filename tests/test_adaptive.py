@@ -10,7 +10,7 @@ from voxneuro.adaptive import (
     fit_supervised_projection,
     subspace_gate_active,
 )
-from voxneuro.method import _subject_rows, _validate_frame
+from voxneuro.method import _validate_frame
 
 
 def _synthetic_frame(n_subjects: int = 30, n_features: int = 8, seed: int = 7) -> pd.DataFrame:
@@ -33,7 +33,7 @@ def test_gate_follows_the_dimensionality_rule():
     assert not subspace_gate_active(753, 604, "off")
 
 
-def test_rank_normalizer_is_fitted_on_training_rows_only():
+def test_rank_normalizer_maps_training_rows_monotonically_to_normal_scores():
     rng = np.random.default_rng(0)
     X_train = rng.lognormal(size=(120, 4))
     normalizer = fit_normalizer(X_train, "rank")
@@ -45,12 +45,37 @@ def test_rank_normalizer_is_fitted_on_training_rows_only():
     assert np.all(np.diff(Z[order, 0]) >= -1e-12)
 
 
-def test_supervised_projection_uses_balanced_targets_and_requested_dimension():
+def test_supervised_projection_dimension_and_target_coding():
     rng = np.random.default_rng(1)
     X = rng.normal(size=(90, 12))
     y = np.repeat([0, 1, 1], 30)
     projection = fit_supervised_projection(X, y, 4)
     assert projection.transform(X).shape == (90, 4)
+    # the class-count coding is an affine transformation of the labels, so the rotations equal those of 0/1 targets
+    from sklearn.cross_decomposition import PLSRegression
+    plain = PLSRegression(n_components=4, scale=False).fit(X, y.astype(float))
+    assert np.allclose(np.abs(projection.x_rotations_), np.abs(plain.x_rotations_), atol=1e-8)
+
+
+def test_rank_normalizer_ignores_held_out_rows():
+    rng = np.random.default_rng(5)
+    X_train = rng.lognormal(size=(100, 3))
+    X_other = rng.lognormal(size=(50, 3)) * 10
+    a = fit_normalizer(X_train, "rank").transform(X_train)
+    b = fit_normalizer(X_train, "rank").transform(np.vstack([X_train, X_other]))[:100]
+    assert np.allclose(a, b)
+
+
+def test_empty_or_duplicate_subspace_dims_are_rejected():
+    import pytest
+    frame = _synthetic_frame(n_subjects=30, n_features=120)
+    df, feats = _validate_frame(frame, "subject", "label", ["recording"])
+    X = df[feats].to_numpy(float); row_ids = df["subject"].to_numpy(str); row_labels = df["label"].to_numpy(int)
+    train_ids = sorted(set(row_ids))[:24]
+    with pytest.raises(ValueError):
+        fit_adaptive_model(X, row_ids, row_labels, train_ids, subspace_dims=(), random_state=3)
+    with pytest.raises(ValueError):
+        fit_adaptive_model(X, row_ids, row_labels, train_ids, subspace_dims=(4, 4), random_state=3)
 
 
 def test_low_dimensional_frame_reduces_to_full_space_model():

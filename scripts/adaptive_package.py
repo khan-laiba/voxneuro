@@ -21,6 +21,7 @@ from multiprocessing import Pool
 from pathlib import Path
 
 import numpy as np
+from threadpoolctl import threadpool_limits
 import pandas as pd
 from sklearn.metrics import balanced_accuracy_score, f1_score
 from sklearn.model_selection import StratifiedKFold
@@ -211,4 +212,5 @@ def main() -> None:
 
 
 if __name__ == "__main__":
-    main()
+    with threadpool_limits(limits=1):   # single-threaded linear algebra for every entry point
+        main()

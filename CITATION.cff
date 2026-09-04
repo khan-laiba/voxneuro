@@ -1,9 +1,9 @@
 cff-version: 1.2.0
 message: >-
   If you use this software, please cite it using the metadata below. A journal
-  article describing the method has been submitted to Bioengineering (MDPI) and
-  is under review; this file will be updated with the final article metadata
-  upon publication.
+  article describing the method has been prepared for submission to
+  Bioengineering (MDPI); this file will be updated with the article metadata
+  once it is published.
 title: "VoxNeuro"
 type: software
 authors:
@@ -14,6 +14,8 @@ authors:
 repository-code: "https://github.com/khan-laiba/voxneuro"
 url: "https://voxneuro.org"
 license: MIT
+version: "2.1.2"
+date-released: "2026-09-04"
 preferred-citation:
   type: article
   title: >-
@@ -26,4 +28,4 @@ preferred-citation:
       given-names: Manas
   year: 2026
   journal: "Bioengineering"
-  notes: "Submitted to Bioengineering (MDPI); under review."
+  notes: "Manuscript prepared for submission to Bioengineering (MDPI), 2026; unpublished."

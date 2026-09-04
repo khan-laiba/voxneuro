@@ -4,7 +4,6 @@ import numpy as np
 import pandas as pd
 
 from voxneuro.method import (
-    build_subject_views,
     chordal_squared,
     evaluate_repeated_measurements,
     grassmann_geodesic,
@@ -72,3 +71,24 @@ def test_end_to_end_evaluation_produces_one_prediction_per_subject_and_method():
     assert counts.eq(1).all()
     assert result.fold_metrics["balanced_accuracy"].between(0.0, 1.0).all()
     assert result.fold_metrics["macro_f1"].between(0.0, 1.0).all()
+
+
+def test_identifier_collisions_are_rejected():
+    import pytest
+    from voxneuro.method import _validate_frame
+    rows = []
+    for sid, label in ((1, 0), ("1", 1), (2, 0), (3, 1)):
+        for r in range(3):
+            rows.append({"subject": sid, "label": label, "x0": float(r), "x1": float(r) + 1.0, "x2": 2.0})
+    frame = pd.DataFrame(rows)
+    with pytest.raises(ValueError):
+        _validate_frame(frame, "subject", "label", [])
+
+
+def test_rank_above_feature_count_is_rejected():
+    import pytest
+    from voxneuro.method import build_subject_views
+    X = np.random.default_rng(0).normal(size=(6, 2))
+    ids = np.array(["a"] * 3 + ["b"] * 3); labels = np.array([0, 0, 0, 1, 1, 1])
+    with pytest.raises(ValueError):
+        build_subject_views(X, ids, labels, ["a", "b"], rank=3, allow_rank_deficient=True)

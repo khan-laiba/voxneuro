@@ -7,8 +7,8 @@ from sklearn.model_selection import StratifiedKFold
 from sklearn.cross_decomposition import PLSRegression
 from sklearn.svm import SVC
 from sklearn.metrics import balanced_accuracy_score, f1_score
-from vox2 import load, euclidean_squared, chordal_squared, rbf_med
-from vox3 import _norm, _views, _gsmote, _svc, _setk
+from family_mkl import load, euclidean_squared, chordal_squared, rbf_med
+from subspace_dev import _norm, _views, _gsmote, _svc, _setk
 
 def fused_dec(Q0, S0, Q1, S1, y, w):
     de = euclidean_squared(S0); ge = rbf_med(de); Ke, Kete = np.exp(-ge * de), np.exp(-ge * euclidean_squared(S1, S0))

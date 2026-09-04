@@ -1,4 +1,7 @@
 """Fixed fusion-weight sweep across the 24 augmentation seeds (PD-252, fixed folds) and 20 outer partitions (both cohorts)."""
+import sys as _sys
+if "--help" in _sys.argv or "-h" in _sys.argv:
+    print(__doc__); print("\nRun from the repository root with data/ (UCI datasets) and robustness_out/ present; no arguments are required."); _sys.exit(0)
 import warnings; warnings.filterwarnings("ignore")
 import numpy as np, pandas as pd
 from sklearn.model_selection import StratifiedKFold

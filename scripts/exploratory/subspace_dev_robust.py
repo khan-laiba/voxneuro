@@ -7,8 +7,8 @@ from multiprocessing import Pool
 from sklearn.model_selection import StratifiedKFold
 from sklearn.cross_decomposition import PLSRegression
 from sklearn.metrics import balanced_accuracy_score, f1_score
-from vox2 import load, family, euclidean_squared, chordal_squared, rbf_med
-from vox3 import _norm, _views, _gsmote, _svc
+from family_mkl import load, family, euclidean_squared, chordal_squared, rbf_med
+from subspace_dev import _norm, _views, _gsmote, _svc
 
 QS = (8, 16, 32)
 

@@ -79,8 +79,9 @@ def euclid_models(F):
         lr2 = LogisticRegression(class_weight="balanced", solver="liblinear", max_iter=5000, random_state=42).fit(s_rs, y_rs)
         de = M.euclidean_squared(s_rs); ge = M._median_gamma(de)
         rbf = SVC(kernel="precomputed", C=1.0, class_weight="balanced").fit(np.exp(-ge * de), y_rs)
-        for n, model in ((names[0], lr), (names[1], lin), (names[2], lr2)):
-            res[n].append(rec(f["fold"], yte, (model.decision_function(s_te) > 0).astype(int), n_synthetic=len(y_rs) - len(ytr)))
+        for n, model, n_syn in ((names[0], lr, 0), (names[1], lin, 0), (names[2], lr2, len(y_rs) - len(ytr))):
+            # the class-weighted logistic regression and linear SVM are fitted on the original summaries (no synthetic rows)
+            res[n].append(rec(f["fold"], yte, (model.decision_function(s_te) > 0).astype(int), n_synthetic=n_syn))
         yp = (rbf.decision_function(np.exp(-ge * M.euclidean_squared(s_te, s_rs))) > 0).astype(int)
         res[names[3]].append(rec(f["fold"], yte, yp, n_synthetic=len(y_rs) - len(ytr)))
     return res
