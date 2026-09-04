@@ -2,7 +2,7 @@
 
 **Leakage-safe multi-view Grassmannian learning for repeated Parkinsonian speech**
 
-VoxNeuro is a reference implementation of the speech-classification pipeline described by Laiba Khan and Manas Waghe in *VoxNeuro: Leakage-Safe Parkinson’s Screening Support via Multi-View Grassmannian Speech Analysis*, prepared for submission to *Bioengineering* (MDPI) in 2026 (unpublished). The manuscript supersedes an earlier five-page draft prepared for MIT URTC 2026.
+VoxNeuro is a reference implementation of the speech-classification pipeline described by Laiba Khan and Manas Waghe in *VoxNeuro: Leakage-Safe Parkinson’s Screening Support via Multi-View Grassmannian Speech Analysis*, prepared for submission to *Bioengineering* (MDPI) in 2026 (unpublished).
 
 The central design choice is simple but important: the subject, not an individual recording, is the statistical observation. Every recording from one person stays in the same outer fold, and all scaling, bandwidth estimation, and synthetic-subject generation are restricted to training data.
 
