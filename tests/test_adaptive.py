@@ -84,8 +84,8 @@ def test_end_to_end_evaluation_reports_every_method_once_per_subject():
     result = evaluate_adaptive(frame, id_col="subject", label_col="label", drop_cols=["recording"],
                                n_splits=3, subspace_dims=(4, 8), random_state=5)
     methods = set(result.summary_metrics["method"])
-    assert {"Adaptive_Subspace_Fusion", "Fused_Grassmann_GSMOTE", "Euclidean_RBF_GSMOTE",
-            "Balanced_LogReg", "Balanced_LinearSVM", "SMOTE_LogReg", "Subspace_q4", "Subspace_q8"} <= methods
+    assert {"Adaptive_Subspace_Fusion", "Fused_Grassmann_GSMOTE", "Euclidean_RBF_GSMOTE", "Balanced_LogReg",
+            "Balanced_LinearSVM", "SMOTE_LogReg", "Balanced_RandomForest", "PLS_DA", "Subspace_q4", "Subspace_q8"} <= methods
     counts = result.predictions.groupby("method")["subject_id"].nunique()
     assert (counts == 30).all()
     assert set(result.pooled_confusions.columns) >= {"TN", "FP", "FN", "TP"}

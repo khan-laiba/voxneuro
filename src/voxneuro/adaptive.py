@@ -44,6 +44,8 @@ import numpy as np
 import pandas as pd
 from sklearn.cross_decomposition import PLSRegression
 from threadpoolctl import threadpool_limits
+from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
+from sklearn.ensemble import RandomForestClassifier
 from sklearn.linear_model import LogisticRegression
 from sklearn.model_selection import StratifiedKFold
 from sklearn.preprocessing import QuantileTransformer, StandardScaler
@@ -259,6 +261,9 @@ def evaluate_adaptive(
         the matched Euclidean ablation (fusion weight 0);
     ``Balanced_LogReg``, ``Balanced_LinearSVM``, ``SMOTE_LogReg``
         the linear comparators of the original protocol;
+    ``Balanced_RandomForest``, ``PLS_DA``
+        a class-balanced random forest (500 trees) and PLS discriminant analysis with the
+        number of components chosen by inner cross-validation, both on the subject summaries;
     ``Subspace_q<k>`` (optional)
         the individual ensemble members, only when the gate is active.
     """
@@ -390,3 +395,42 @@ def _run_folds(
             class_weight="balanced", solver="liblinear", max_iter=5000, random_state=random_state
         ).fit(s_res, y_res)
         record(fold, "SMOTE_LogReg", test_ids, y_test, smote_logistic.decision_function(s_test), synthetic_euclidean)
+
+        # Standard nonlinear and projection-based comparators on the subject summaries.
+        forest = RandomForestClassifier(
+            n_estimators=500, class_weight="balanced_subsample", random_state=random_state, n_jobs=1
+        ).fit(s_train, y_train)
+        record(fold, "Balanced_RandomForest", test_ids, y_test, forest.predict_proba(s_test)[:, 1] - 0.5)
+        record(fold, "PLS_DA", test_ids, y_test, _plsda_decision(s_train, y_train, s_test, random_state))
+
+
+PLSDA_COMPONENTS: tuple[int, ...] = (2, 4, 8, 16)
+
+
+def _plsda_fit_predict(s_train: np.ndarray, y_train: np.ndarray, s_test: np.ndarray, n_components: int) -> np.ndarray:
+    """PLS-DA: class-balanced PLS projection of the subject summaries followed by shrinkage LDA."""
+    scaler = StandardScaler().fit(s_train)
+    z_train, z_test = scaler.transform(s_train), scaler.transform(s_test)
+    n_components = int(min(n_components, z_train.shape[0] - 1, z_train.shape[1]))
+    projection = fit_supervised_projection(z_train, y_train, n_components)
+    lda = LinearDiscriminantAnalysis(solver="lsqr", shrinkage="auto", priors=[0.5, 0.5]).fit(
+        projection.transform(z_train), y_train
+    )
+    return np.asarray(lda.decision_function(projection.transform(z_test)), dtype=float)
+
+
+def _plsda_decision(s_train: np.ndarray, y_train: np.ndarray, s_test: np.ndarray, random_state: int) -> np.ndarray:
+    """PLS-DA comparator with the number of components chosen by inner five-fold cross-validation
+    (balanced accuracy on pooled inner out-of-fold predictions), fitted on the training subjects only."""
+    from sklearn.metrics import balanced_accuracy_score
+
+    inner = StratifiedKFold(n_splits=5, shuffle=True, random_state=random_state)
+    best_q, best_score = PLSDA_COMPONENTS[0], -1.0
+    for q in PLSDA_COMPONENTS:
+        oof = np.zeros(len(y_train))
+        for a, b in inner.split(s_train, y_train):
+            oof[b] = _plsda_fit_predict(s_train[a], y_train[a], s_train[b], q)
+        score = balanced_accuracy_score(y_train, (oof > 0).astype(int))
+        if score > best_score + 1e-12:
+            best_q, best_score = q, score
+    return _plsda_fit_predict(s_train, y_train, s_test, best_q)
