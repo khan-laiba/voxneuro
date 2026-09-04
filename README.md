@@ -20,7 +20,8 @@ The central design choice is simple but important: the subject, not an individua
 - project-specific Grassmann-geodesic synthetic minority oversampling (G-SMOTE);
 - class-weighted logistic-regression and linear-SVM comparators;
 - Euclidean SMOTE followed by logistic regression;
-- fold metrics, cross-fold summaries, pooled confusion counts, and subject-level out-of-fold predictions.
+- fold metrics, cross-fold summaries, pooled confusion counts, and subject-level out-of-fold predictions;
+- **(v2.0.0) the adaptive-subspace fused model** (`voxneuro.adaptive`): fold-local Gaussian rank normalization of the recordings and, when the feature count exceeds the number of training recordings, a supervised-subspace ensemble (PLS projections to $q\in\{8,16,32\}$ dimensions, one fused Grassmann–Euclidean SVM per dimension, decision values averaged after division by their training-fold standard deviation). When the gate is inactive the model reduces to the rank-normalized fused model with the G-SMOTE gate.
 
 This is not the complete paper analysis archive. The core CLI does not expose the paper's matched Euclidean RBF + G-SMOTE ablation as a named output; that ablation is implemented in [`scripts/seed_sensitivity.py`](scripts/seed_sensitivity.py) (fusion weight 0 on the same augmented training folds). The feature-family permutation analysis and the deployed web application are not included. Subject-level out-of-fold predictions are archived under `results/` for the UCI-489 run, the PD-252 default-seed run and the robustness package, as stated in the manuscript's Data Availability Statement.
 
@@ -63,12 +64,27 @@ For an imbalanced training fold, G-SMOTE selects a minority subject and one of i
 
 The paper experiments used three recordings per subject and fixed $r=3$, $w=0.5$, SVM $C=1$, five nearest minority neighbors, five stratified outer folds, and outer-fold seed 42; the original PD-252 augmentation state was not retained, and the archived default-seed and seed-sensitivity runs use the documented derived seeds. UCI-489 is balanced, so no synthetic subjects were generated for it.
 
-## Results 
+## Results
 
-| Dataset | Paper model | Balanced accuracy, mean ± SE | Macro-F1, mean ± SE |
+Subject-level, five-fold subject-disjoint cross-validation at the default partition (seed 42), mean ± fold-level SE. The adaptive model's seed-42 estimates are development estimates; the 20-partition study is the post-development confirmation (same subjects, different outer partitions).
+
+| Dataset | Model | Balanced accuracy | Macro-F1 |
 | --- | --- | ---: | ---: |
-| UCI-489 | Grassmann-Euclidean fusion | 0.850 ± 0.042 | 0.847 ± 0.043 |
-| PD-252 | Grassmann-Euclidean fusion + G-SMOTE | 0.749 ± 0.039 | 0.760 ± 0.035 |
+| UCI-489 | Adaptive-subspace fused model (gate inactive = rank-normalized fused model) | 0.875 ± 0.040 | 0.873 ± 0.040 |
+| UCI-489 | Original fused model (z-standardized) | 0.850 ± 0.042 | 0.847 ± 0.043 |
+| PD-252 | Adaptive-subspace fused model | 0.816 ± 0.041 | 0.811 ± 0.035 |
+| PD-252 | Rank-normalized fused model + G-SMOTE (full space) | 0.782 ± 0.035 | 0.781 ± 0.028 |
+| PD-252 | Original fused model + G-SMOTE (z-standardized, default augmentation seed) | 0.731 ± 0.032 | 0.749 ± 0.031 |
+
+Across 20 alternative outer subject partitions (StratifiedKFold seeds 0–19), the adaptive-subspace fused model averaged 0.784 ± 0.017 balanced accuracy and 0.785 ± 0.014 macro-F1 on PD-252 versus 0.721 ± 0.020 and 0.734 ± 0.019 for the original fused model (paired differences +0.062 and +0.050, positive in all 20 partitions on both metrics); on UCI-489 it averaged 0.853 ± 0.019 / 0.852 ± 0.019 versus 0.853 ± 0.013 / 0.851 ± 0.014 (a tie). Pooled PD-252 confusion counts of the adaptive model at the default partition: TP 169, FN 19, TN 47, FP 17 (sensitivity 0.899, specificity 0.734).
+
+[`results/adaptive/`](results/adaptive/) archives the adaptive-model package produced by [`scripts/adaptive_package.py`](scripts/adaptive_package.py) under the pinned environment: `adaptive_comparators.csv` (every comparator, both cohorts, rank normalization and z-standardization), `adaptive_default_<cohort>_<normalization>/` (fold metrics, pooled confusions, subject-level out-of-fold predictions), `adaptive_partitions.csv` (20 outer partitions, all models, both normalizations, plus the gate forced on for UCI-489), `adaptive_dimension_sweep.csv` (single subspace dimensions 4–64 versus the ensemble), `adaptive_weight_ablation.csv` (fusion weight 0, 0.5, 1 inside the adaptive model), `adaptive_gsmote_ablation.csv` (G-SMOTE inside the subspace branch, 24 seeds) and `adaptive_concentration.csv` (coefficient of variation of pairwise chordal and Euclidean distances before and after the projection).
+
+```bash
+PYTHONPATH=src python scripts/adaptive_package.py --uci <UCI-489 csv> --pd <PD-252 clean csv> --out results/adaptive
+```
+
+The original configuration and its robustness package are retained below.
 
 [`results/pd252-seed-study/`](results/pd252-seed-study/) archives a paired G-SMOTE seed-sensitivity study on PD-252 (24 distinct augmentation seeds, outer folds fixed): per-seed balanced accuracy and macro-F1 for the fused model and its matched Euclidean RBF ablation (the same pipeline with `--weight 0`), produced by [`scripts/seed_sensitivity.py`](scripts/seed_sensitivity.py) under the pinned environment.
 
@@ -211,6 +227,10 @@ voxneuro --csv PATH --id-col COLUMN --label-col COLUMN [options]
 | `--C` | `1.0` | SVM penalty |
 | `--gsmote-neighbors` | `5` | Maximum minority neighbors used by G-SMOTE and Euclidean SMOTE |
 | `--seed` | `42` | Cross-validation and augmentation seed |
+| `--model` | `adaptive` | `adaptive`: rank-normalized, dimension-adaptive model with its comparators (v2.0.0); `original`: z-standardized fused model of the original submission |
+| `--normalization` | `rank` | Recording-level normalization for the adaptive model (`rank` or `standard`), fitted on training folds only |
+| `--subspace-dims` | `8 16 32` | Supervised-subspace dimensions of the ensemble members |
+| `--gate` | `auto` | Supervised-subspace gate: `auto` activates it when the feature count exceeds the number of training recordings; `on`/`off` force it |
 
 Run `voxneuro --help` for the installed command's authoritative option list.
 
@@ -222,6 +242,9 @@ Run `voxneuro --help` for the installed command's authoritative option list.
 | `Balanced_LinearSVM` | Class-weighted linear SVM on the Euclidean summary |
 | `SMOTE_LogReg` | Euclidean SMOTE on training summaries, followed by class-weighted logistic regression |
 | `Fused_Grassmann_GSMOTE` | Fold-local G-SMOTE followed by a class-weighted, precomputed-kernel SVC on the fused kernel |
+| `Adaptive_Subspace_Fusion` | (`--model adaptive`) rank-normalized, dimension-adaptive fused model: supervised-subspace ensemble when the gate is active, otherwise the rank-normalized fused model with the G-SMOTE gate |
+| `Euclidean_RBF_GSMOTE` | (`--model adaptive`) matched Euclidean RBF ablation (fusion weight 0) under the same normalization and augmentation |
+| `Subspace_q<k>` | (`--model adaptive`, gate active) individual ensemble members with subspace dimension *k* |
 
 When a training fold is already balanced, no samples are synthesized. In that case `SMOTE_LogReg` receives the unmodified training data, and the fused output retains its method identifier while recording zero synthetic subjects.
 

@@ -1,0 +1,7 @@
+method,TN,FP,FN,TP
+Adaptive_Subspace_Fusion,34,6,6,34
+Fused_Grassmann_GSMOTE,34,6,6,34
+Euclidean_RBF_GSMOTE,34,6,5,35
+Balanced_LogReg,30,10,8,32
+Balanced_LinearSVM,29,11,12,28
+SMOTE_LogReg,30,10,8,32

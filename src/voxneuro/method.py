@@ -194,11 +194,12 @@ def chordal_squared(
     rank = Q_left[0].shape[1]
     if any(Q.shape[1] != rank for Q in [*Q_left, *Q_right]):
         raise ValueError("All subspaces must have the same rank.")
-    out = np.empty((len(Q_left), len(Q_right)), dtype=float)
-    for i, Qa in enumerate(Q_left):
-        for j, Qb in enumerate(Q_right):
-            out[i, j] = rank - float(np.linalg.norm(Qa.T @ Qb, ord="fro") ** 2)
-    return np.maximum(out, 0.0)
+    # ||Qa^T Qb||_F^2 for every pair through one Gram product of the stacked bases.
+    left = np.hstack(list(Q_left))
+    right = left if Q_right is Q_left else np.hstack(list(Q_right))
+    gram_sq = (left.T @ right) ** 2
+    overlap = gram_sq.reshape(len(Q_left), rank, len(Q_right), rank).sum(axis=(1, 3))
+    return np.maximum(rank - overlap, 0.0)
 
 
 def euclidean_squared(A: np.ndarray, B: np.ndarray | None = None) -> np.ndarray:
