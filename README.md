@@ -22,7 +22,7 @@ The central design choice is simple but important: the subject, not an individua
 - Euclidean SMOTE followed by logistic regression;
 - fold metrics, cross-fold summaries, pooled confusion counts, and subject-level out-of-fold predictions.
 
-This is not the complete paper analysis archive. The core CLI does not expose the paper's matched Euclidean RBF + G-SMOTE ablation as a named output; that ablation is implemented in [`scripts/seed_sensitivity.py`](scripts/seed_sensitivity.py) (fusion weight 0 on the same augmented training folds). The feature-family permutation analysis and the deployed web application are not included. Subject-level out-of-fold predictions are archived under `results/` for the UCI-489 run and the PD-252 default-seed run, as stated in the manuscript's Data Availability Statement.
+This is not the complete paper analysis archive. The core CLI does not expose the paper's matched Euclidean RBF + G-SMOTE ablation as a named output; that ablation is implemented in [`scripts/seed_sensitivity.py`](scripts/seed_sensitivity.py) (fusion weight 0 on the same augmented training folds). The feature-family permutation analysis and the deployed web application are not included. Subject-level out-of-fold predictions are archived under `results/` for the UCI-489 run, the PD-252 default-seed run and the robustness package, as stated in the manuscript's Data Availability Statement.
 
 ## Method summary
 
@@ -73,6 +73,13 @@ The paper experiments used three recordings per subject and fixed $r=3$, $w=0.5$
 [`results/pd252-seed-study/`](results/pd252-seed-study/) archives a paired G-SMOTE seed-sensitivity study on PD-252 (24 distinct augmentation seeds, outer folds fixed): per-seed balanced accuracy and macro-F1 for the fused model and its matched Euclidean RBF ablation (the same pipeline with `--weight 0`), produced by [`scripts/seed_sensitivity.py`](scripts/seed_sensitivity.py) under the pinned environment.
 
 [`results/pd252-default-seed/`](results/pd252-default-seed/) archives the four output CSVs of a PD-252 run of this package at the default seed (rank 3, seed 42, `--allow-rank-deficient`, five folds) under the pinned environment: fused balanced accuracy 0.731 and macro-F1 0.749, the default-seed values quoted in the manuscript's Section 3.3, with subject-level out-of-fold predictions and pooled confusion counts.
+
+[`results/robustness/`](results/robustness/) archives the robustness package reported in the manuscript's Sections 2.12, 3.1, 3.4 and 3.5, produced by [`scripts/robustness.py`](scripts/robustness.py) and [`scripts/augmentation_seeds.py`](scripts/augmentation_seeds.py) under the pinned environment: `unified_comparators.csv` / `unified_fold_metrics.csv` (fused, matched Euclidean RBF, Grassmann-only, class-weighted logistic regression, class-weighted linear SVM, SMOTE + logistic regression, SMOTE + Euclidean RBF; both cohorts; PD-252 at the default seed), `oof_predictions_fused.csv` (subject-level out-of-fold predictions for both cohorts), `partition_sensitivity.csv` (20 outer subject partitions), `rank_sensitivity.csv` (rank 2 vs. 3), `augmentation_seed_study.csv` (24 seeds: fused, G-SMOTE + RBF, SMOTE + RBF), `permutation_sensitivity.csv` (feature-family permutation of the Euclidean view, 20 draws per family and fold) and `family_map.csv` (column-to-family assignment).
+
+```bash
+PYTHONPATH=src python scripts/robustness.py --uci <UCI-489 csv> --pd <PD-252 clean csv> --out results/robustness
+PYTHONPATH=src python scripts/augmentation_seeds.py   # expects data/pd_speech_features_clean.csv; writes robustness_out/augmentation_seed_study.csv
+```
 
 The [`results/uci489-rank3/`](results/uci489-rank3/) directory archives the four output CSVs of a UCI-489 run of this package (rank 3, seed 42, `--allow-rank-deficient`, five folds) under the pinned environment in [`requirements-lock.txt`](requirements-lock.txt), including the subject-level out-of-fold predictions referenced in the manuscript's Data Availability Statement; its fused-model aggregates match the manuscript's UCI-489 values above.
 
