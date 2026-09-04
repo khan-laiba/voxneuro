@@ -1,4 +1,4 @@
-"""Exploration 5 (Codex-inspired additions), default partition, both cohorts, all augmentation-free unless stated:
+"""Exploration 5 (additional candidate constructions), default partition, both cohorts, all augmentation-free unless stated:
 uniform-floor ALIGNF, permanent set kernel, reliability/effect-weighted metric, nested BA threshold, balanced subagging, PLS-DA+LDA."""
 import warnings; warnings.filterwarnings("ignore")
 import sys, itertools, numpy as np, pandas as pd
