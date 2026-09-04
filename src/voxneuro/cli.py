@@ -7,6 +7,7 @@ from pathlib import Path
 
 import pandas as pd
 
+from .adaptive import DEFAULT_SUBSPACE_DIMS, evaluate_adaptive
 from .method import evaluate_repeated_measurements
 
 
@@ -31,6 +32,35 @@ def _parser() -> argparse.ArgumentParser:
     parser.add_argument("--gsmote-neighbors", type=int, default=5)
     parser.add_argument("--seed", type=int, default=42)
     parser.add_argument(
+        "--model",
+        choices=["adaptive", "original"],
+        default="adaptive",
+        help=(
+            "'adaptive' (default) runs the rank-normalized, dimension-adaptive "
+            "multi-view model with its comparators; 'original' runs the "
+            "z-standardized fused model of the original submission."
+        ),
+    )
+    parser.add_argument(
+        "--normalization",
+        choices=["rank", "standard"],
+        default="rank",
+        help="Recording-level normalization for --model adaptive (fitted on training folds only).",
+    )
+    parser.add_argument(
+        "--subspace-dims",
+        type=int,
+        nargs="*",
+        default=list(DEFAULT_SUBSPACE_DIMS),
+        help="Supervised-subspace dimensions of the ensemble members (adaptive model).",
+    )
+    parser.add_argument(
+        "--gate",
+        choices=["auto", "on", "off"],
+        default="auto",
+        help="Supervised-subspace gate: 'auto' activates it when the feature count exceeds the training recordings.",
+    )
+    parser.add_argument(
         "--allow-rank-deficient",
         action="store_true",
         help=(
@@ -47,8 +77,7 @@ def _parser() -> argparse.ArgumentParser:
 def main() -> None:
     args = _parser().parse_args()
     frame = pd.read_csv(args.csv)
-    result = evaluate_repeated_measurements(
-        frame,
+    common = dict(
         id_col=args.id_col,
         label_col=args.label_col,
         drop_cols=args.drop_cols,
@@ -60,6 +89,16 @@ def main() -> None:
         g_smote_neighbors=args.gsmote_neighbors,
         random_state=args.seed,
     )
+    if args.model == "adaptive":
+        result = evaluate_adaptive(
+            frame,
+            normalization=args.normalization,
+            subspace_dims=tuple(args.subspace_dims),
+            gate=args.gate,
+            **common,
+        )
+    else:
+        result = evaluate_repeated_measurements(frame, **common)
     result.save(Path(args.output_dir))
     print(result.summary_metrics.to_string(index=False))
 
