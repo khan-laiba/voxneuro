@@ -87,6 +87,18 @@ def _validate_frame(
     if df[id_col].isna().any() or df[label_col].isna().any():
         raise ValueError("Subject IDs and labels must not contain missing values.")
 
+    # Canonicalize identifiers before any per-subject check so that distinct input
+    # identifiers cannot silently merge (e.g. integer 1 and string "1").
+    canonical = df[id_col].astype(str)
+    collisions = df[[id_col]].assign(_canonical=canonical).drop_duplicates().groupby("_canonical")[id_col].nunique()
+    collided = collisions[collisions > 1]
+    if not collided.empty:
+        raise ValueError(
+            "Distinct subject identifiers collapse to the same string identifier: "
+            + ", ".join(map(str, collided.index.tolist()))
+        )
+    df[id_col] = canonical
+
     label_counts = df.groupby(id_col)[label_col].nunique(dropna=False)
     inconsistent = label_counts[label_counts != 1]
     if not inconsistent.empty:
@@ -100,7 +112,6 @@ def _validate_frame(
         raise ValueError(f"Exactly two classes are required; found {labels}.")
     label_map = {labels[0]: 0, labels[1]: 1}
     df[label_col] = df[label_col].map(label_map).astype(int)
-    df[id_col] = df[id_col].astype(str)
 
     feature_cols = [c for c in df.columns if c not in {id_col, label_col, *drop_cols}]
     if not feature_cols:
@@ -157,6 +168,11 @@ def build_subject_views(
                 f"Subject {sid!r} has {idx.size} recordings, fewer than requested rank {rank}."
             )
         Xi = np.asarray(X_scaled[idx], dtype=float)  # recordings x features
+        if Xi.shape[1] < rank:
+            raise ValueError(
+                f"Requested rank {rank} exceeds the feature count {Xi.shape[1]}; "
+                "the thin SVD cannot supply that many basis columns."
+            )
         mean = Xi.mean(axis=0)
         std = Xi.std(axis=0, ddof=0)
         M = Xi.T  # features x recordings

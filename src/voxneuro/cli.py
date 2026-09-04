@@ -50,7 +50,7 @@ def _parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--subspace-dims",
         type=int,
-        nargs="*",
+        nargs="+",
         default=list(DEFAULT_SUBSPACE_DIMS),
         help="Supervised-subspace dimensions of the ensemble members (adaptive model).",
     )

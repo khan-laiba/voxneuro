@@ -93,12 +93,15 @@ def fit_normalizer(X_train: np.ndarray, kind: str = "rank"):
 def fit_supervised_projection(
     X_train_rows: np.ndarray, y_train_rows: np.ndarray, n_components: int
 ) -> PLSRegression:
-    """PLS projection fitted on training recordings with class-balanced targets.
+    """PLS projection fitted on training recordings with class-count-coded binary targets.
 
     Each recording carries its subject's label. The regression target is
-    ``+1/n_1`` for class-1 recordings and ``-1/n_0`` for class-0 recordings, so
-    both classes receive equal total weight in the covariance that PLS
-    maximizes.
+    ``+1/n_1`` for class-1 recordings and ``-1/n_0`` for class-0 recordings.
+    For this single-response regression the coding is an affine transformation
+    of the binary labels, so after centering it is a positive multiple of the
+    centered labels: it does not implement sample-weighted PLS and, in exact
+    arithmetic, yields the same directions as plain 0/1 targets. Class
+    imbalance is handled downstream by the SVM class weights.
     """
     y = np.asarray(y_train_rows, dtype=int)
     n1 = max(int(np.sum(y == 1)), 1)
@@ -191,6 +194,11 @@ def fit_adaptive_model(
     allow_rank_deficient: bool = False,
 ) -> AdaptiveModel:
     """Fit the adaptive model on the training subjects ``train_ids`` only."""
+    subspace_dims = tuple(int(q) for q in subspace_dims)
+    if len(subspace_dims) == 0:
+        raise ValueError("subspace_dims must contain at least one dimension.")
+    if len(set(subspace_dims)) != len(subspace_dims) or any(q < 1 for q in subspace_dims):
+        raise ValueError("subspace_dims must be distinct positive integers.")
     train_rows = np.flatnonzero(np.isin(row_ids, list(train_ids)))
     normalizer = fit_normalizer(X[train_rows], normalization)
     Xn = np.empty_like(X, dtype=float)
@@ -419,10 +427,13 @@ def _plsda_fit_predict(s_train: np.ndarray, y_train: np.ndarray, s_test: np.ndar
 
 def _plsda_decision(s_train: np.ndarray, y_train: np.ndarray, s_test: np.ndarray, random_state: int) -> np.ndarray:
     """PLS-DA comparator with the number of components chosen by inner five-fold cross-validation
-    (balanced accuracy on pooled inner out-of-fold predictions), fitted on the training subjects only."""
+    (balanced accuracy on pooled inner out-of-fold predictions; ``min(5, smallest training class count)`` folds), fitted on the training subjects only."""
     from sklearn.metrics import balanced_accuracy_score
 
-    inner = StratifiedKFold(n_splits=5, shuffle=True, random_state=random_state)
+    n_inner = int(min(5, np.bincount(np.asarray(y_train, dtype=int)).min()))
+    if n_inner < 2:
+        raise ValueError("PLS-DA component selection needs at least two training subjects per class.")
+    inner = StratifiedKFold(n_splits=n_inner, shuffle=True, random_state=random_state)
     best_q, best_score = PLSDA_COMPONENTS[0], -1.0
     for q in PLSDA_COMPONENTS:
         oof = np.zeros(len(y_train))

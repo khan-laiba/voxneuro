@@ -3,7 +3,7 @@
 import warnings; warnings.filterwarnings("ignore")
 import os, sys, time, numpy as np, pandas as pd
 from multiprocessing import Pool
-from vox2 import load, family, evaluate
+from family_mkl import load, family, evaluate
 
 JOBS = []
 for c in range(24): JOBS.append(("seed", "PD-252", c, 42, (1000 + c) * 1000))

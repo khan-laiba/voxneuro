@@ -3,7 +3,7 @@ uniform-floor ALIGNF, permanent set kernel, reliability/effect-weighted metric, 
 import warnings; warnings.filterwarnings("ignore")
 import sys, itertools, numpy as np, pandas as pd
 sys.argv = [sys.argv[0]]
-from newmethods2 import load, family, rbf_med, alignf
+from exploration2 import load, family, rbf_med, alignf
 from sklearn.model_selection import StratifiedKFold
 from sklearn.preprocessing import StandardScaler
 from sklearn.svm import SVC

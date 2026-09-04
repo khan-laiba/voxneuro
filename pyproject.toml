@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "voxneuro-method"
-version = "2.1.1"
+version = "2.1.2"
 description = "Minimal subject-level Grassmann–Euclidean learning and G-SMOTE implementation for repeated Parkinsonian speech"
 readme = "README.md"
 requires-python = ">=3.10"
