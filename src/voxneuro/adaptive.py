@@ -4,16 +4,17 @@ This module implements the model reported in the manuscript on top of the
 shared machinery of :mod:`voxneuro.method`:
 
 1. **Gaussian rank normalization** of the recording-level features. Each
-   feature is mapped through the empirical distribution function of the
-   *training-fold recordings* (``min(RANK_KNOTS, n_train_recordings)``
-   quantile knots, linear interpolation) and then through the standard normal
-   quantile function. The mapping is monotone and scale-free, so heavy-tailed
+   feature is mapped through an interpolated training-quantile transformation
+   that approximates the empirical distribution function of the *training-fold
+   recordings* (``min(RANK_KNOTS, n_train_recordings)`` quantile knots, linear
+   interpolation) and then through the standard normal quantile function. The mapping is monotone and scale-free, so heavy-tailed
    acoustic descriptors no longer dominate the Euclidean summary distances.
 
 2. **A supervised-subspace stage that is activated by a dimensionality gate**
    (feature count larger than the number of training recordings). A
    partial-least-squares (PLS) projection fitted on the training-fold
-   recordings with class-balanced targets maps every recording to ``q``
+   recordings with class-count-coded binary targets (an affine recoding of
+   the labels, not sample-weighted PLS) maps every recording to ``q``
    coordinates; the subject views (rank-``r`` subspace and mean-dispersion
    summary), the median-heuristic Gaussian kernels and the fused kernel are
    then built in that space exactly as in the full space. One class-weighted
@@ -30,7 +31,9 @@ including the conditional G-SMOTE branch for imbalanced training folds.
 Everything that is fitted (normalizer, projection, subspaces, bandwidths,
 classifiers, decision scales) uses the current outer-training fold only, so
 the evaluation remains leakage-safe at the subject level. Evaluation runs
-under single-threaded BLAS so that decision values are bit-reproducible.
+under single-threaded BLAS to limit numerical variability: predicted labels and
+reported metrics reproduce under the documented environment, whereas decision
+values may differ at floating-point precision across builds or platforms.
 """
 
 from __future__ import annotations
@@ -73,8 +76,9 @@ RANK_KNOTS = 300
 def fit_normalizer(X_train: np.ndarray, kind: str = "rank"):
     """Fit the recording-level normalizer on training-fold recordings only.
 
-    ``kind="rank"`` is Gaussian rank normalization (empirical CDF followed by
-    the standard normal quantile function, ``RANK_KNOTS`` quantile knots);
+    ``kind="rank"`` is Gaussian rank normalization (interpolated training-quantile
+    transformation followed by the standard normal quantile function,
+    ``RANK_KNOTS`` quantile knots);
     ``kind="standard"`` is the original z-standardization.
     """
     if kind == "standard":
@@ -268,7 +272,7 @@ def evaluate_adaptive(
     ``Balanced_LogReg``, ``Balanced_LinearSVM``, ``SMOTE_LogReg``
         the linear comparators of the original protocol;
     ``Balanced_RandomForest``, ``PLS_DA``
-        a class-balanced random forest (500 trees) and PLS discriminant analysis with the
+        a class-weighted random forest (500 trees) and PLS discriminant analysis with the
         number of components chosen by inner cross-validation, both on the subject summaries;
     ``Subspace_q<k>`` (optional)
         the individual ensemble members, only when the gate is active.
@@ -295,7 +299,7 @@ def evaluate_adaptive(
     metrics: list[dict[str, object]] = []
     predictions: list[dict[str, object]] = []
 
-    with threadpool_limits(limits=1):  # single-threaded BLAS: bit-for-bit reproducible decision values
+    with threadpool_limits(limits=1):  # single-threaded BLAS: limits run-to-run numerical variability
         _run_folds(
             X, row_ids, row_labels, row_map, subject_ids, subject_labels, splitter, metrics, predictions,
             rank=rank, weight=weight, C=C, normalization=normalization, subspace_dims=subspace_dims, gate=gate,
@@ -414,7 +418,8 @@ PLSDA_COMPONENTS: tuple[int, ...] = (2, 4, 8, 16)
 
 
 def _plsda_fit_predict(s_train: np.ndarray, y_train: np.ndarray, s_test: np.ndarray, n_components: int) -> np.ndarray:
-    """PLS-DA: class-balanced PLS projection of the subject summaries followed by shrinkage LDA."""
+    """PLS-DA: PLS projection of the standardized subject summaries on class-count-coded binary
+    targets, followed by shrinkage LDA with equal priors."""
     scaler = StandardScaler().fit(s_train)
     z_train, z_test = scaler.transform(s_train), scaler.transform(s_test)
     n_components = int(min(n_components, z_train.shape[0] - 1, z_train.shape[1]))
@@ -431,8 +436,10 @@ def _plsda_decision(s_train: np.ndarray, y_train: np.ndarray, s_test: np.ndarray
     from sklearn.metrics import balanced_accuracy_score
 
     n_inner = int(min(5, np.bincount(np.asarray(y_train, dtype=int)).min()))
-    if n_inner < 2:
-        raise ValueError("PLS-DA component selection needs at least two training subjects per class.")
+    if n_inner < 3:
+        # With two inner folds an inner-training set would hold a single subject of the smaller
+        # class, which LDA cannot fit; three training subjects per class guarantee at least two.
+        raise ValueError("PLS-DA component selection needs at least three training subjects per class.")
     inner = StratifiedKFold(n_splits=n_inner, shuffle=True, random_state=random_state)
     best_q, best_score = PLSDA_COMPONENTS[0], -1.0
     for q in PLSDA_COMPONENTS:

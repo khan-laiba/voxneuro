@@ -114,3 +114,21 @@ def test_end_to_end_evaluation_reports_every_method_once_per_subject():
     counts = result.predictions.groupby("method")["subject_id"].nunique()
     assert (counts == 30).all()
     assert set(result.pooled_confusions.columns) >= {"TN", "FP", "FN", "TP"}
+
+
+def test_plsda_component_selection_requires_three_training_subjects_per_class():
+    import pytest
+    from voxneuro.adaptive import _plsda_decision
+
+    rng = np.random.default_rng(3)
+    s_test = rng.normal(size=(2, 6))
+    # two subjects in the smaller class: an inner-training set would hold a single subject of that class
+    s_train = rng.normal(size=(5, 6))
+    y_train = np.array([0, 0, 1, 1, 1])
+    with pytest.raises(ValueError, match="three training subjects per class"):
+        _plsda_decision(s_train, y_train, s_test, random_state=0)
+    # three subjects per class suffice for the inner split
+    s_train = rng.normal(size=(6, 6))
+    y_train = np.array([0, 0, 0, 1, 1, 1])
+    scores = _plsda_decision(s_train, y_train, s_test, random_state=0)
+    assert scores.shape == (2,) and np.all(np.isfinite(scores))

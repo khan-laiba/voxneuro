@@ -14,10 +14,10 @@ authors:
 repository-code: "https://github.com/khan-laiba/voxneuro"
 url: "https://voxneuro.org"
 license: MIT
-version: "2.1.3"
-date-released: "2026-09-04"
+version: "2.1.4"
+date-released: "2026-09-05"
 preferred-citation:
-  type: article
+  type: unpublished
   title: >-
     VoxNeuro: Leakage-Safe Parkinson's Screening Support via
     Multi-View Grassmannian Speech Analysis
@@ -27,5 +27,4 @@ preferred-citation:
     - family-names: Waghe
       given-names: Manas
   year: 2026
-  journal: "Bioengineering"
   notes: "Manuscript prepared for submission to Bioengineering (MDPI), 2026; unpublished."

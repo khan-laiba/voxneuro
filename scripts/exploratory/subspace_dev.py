@@ -3,7 +3,7 @@
 Pipeline inside every training fold (nothing is fitted on held-out subjects):
   1. rank normalization of recordings (quantile -> normal), fitted on training recordings;
   2. a supervised PLS projection of recordings to q components, fitted on training recordings with
-     class-balanced targets, giving a low-dimensional space in which subspace distances are informative;
+     class-count-coded binary targets, giving a low-dimensional space in which subspace distances are informative;
   3. subject views in that space: mean-dispersion summary (Euclidean), rank-3 SVD basis (Grassmann),
      the recording set itself (mean-embedding / MMD);
   4. the prespecified imbalance gate (G-SMOTE along Grassmann geodesics with matched summary interpolation);
@@ -16,7 +16,7 @@ from sklearn.preprocessing import StandardScaler, QuantileTransformer
 from sklearn.cross_decomposition import PLSRegression
 from sklearn.svm import SVC
 from sklearn.metrics import balanced_accuracy_score, f1_score
-from family_mkl import load, family, euclidean_squared, chordal_squared, rbf_med, alignf
+from family_mkl import euclidean_squared, chordal_squared, rbf_med, alignf
 import voxneuro.method as M
 
 QS = (4, 8, 16, 32)
