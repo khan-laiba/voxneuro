@@ -14,7 +14,7 @@ authors:
 repository-code: "https://github.com/khan-laiba/voxneuro"
 url: "https://voxneuro.org"
 license: MIT
-version: "2.1.4"
+version: "2.1.5"
 date-released: "2026-09-05"
 preferred-citation:
   type: unpublished
