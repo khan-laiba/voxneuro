@@ -1,0 +1,16 @@
+# Pinned reproduction environment for the archived results in results/.
+#
+# Verified on CPython 3.11 (macOS arm64): a UCI-489 run of this package
+# (rank 3, seed 42, five folds, --allow-rank-deficient) under these exact
+# versions reproduces the manuscript's UCI-489 aggregates and the archive in
+# results/uci489-rank3/. Package outputs are deterministic for a fixed
+# dataset, seed, and dependency set; across newer stacks (numpy 2.x,
+# scikit-learn up to 1.9) every archived predicted label was reproduced
+# identically, with decision-score differences below 5e-4.
+numpy==1.26.4
+scipy==1.11.4
+scikit-learn==1.3.2
+pandas==2.0.3
+imbalanced-learn==0.11.0
+joblib==1.6.0
+threadpoolctl==3.6.0

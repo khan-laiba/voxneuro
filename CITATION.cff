@@ -1,0 +1,38 @@
+cff-version: 1.2.0
+message: >-
+  If you use this software, please cite it using the metadata below. A journal
+  article describing the method has been prepared for submission to
+  Bioengineering (MDPI); this file will be updated with the article metadata
+  once it is published.
+title: "VoxNeuro"
+type: software
+authors:
+  - family-names: Khan
+    given-names: Laiba
+    affiliation: "VoxNeuro, Lexington, MA, USA"
+    email: laiba@voxneuro.org
+  - family-names: Waghe
+    given-names: Manas
+    affiliation: "Worcester Polytechnic Institute, Worcester, MA, USA"
+    email: mywaghe@wpi.edu
+repository-code: "https://github.com/khan-laiba/voxneuro"
+url: "https://voxneuro.org"
+license: MIT
+version: "2.1.9"
+date-released: "2026-09-08"
+preferred-citation:
+  type: unpublished
+  title: >-
+    VoxNeuro: Leakage-Safe Parkinson's Screening Support via
+    Multi-View Grassmannian Speech Analysis
+  authors:
+    - family-names: Khan
+      given-names: Laiba
+      affiliation: "VoxNeuro, Lexington, MA, USA"
+      email: laiba@voxneuro.org
+    - family-names: Waghe
+      given-names: Manas
+      affiliation: "Worcester Polytechnic Institute, Worcester, MA, USA"
+      email: mywaghe@wpi.edu
+  year: 2026
+  notes: "Manuscript prepared for submission to Bioengineering (MDPI), 2026; unpublished."
